@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - ForexPro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="/">💱 Forex<span>Pro</span></a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/analytics">
+                        Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/news">News</a>
+                </li>
+            </ul>
+            <div class="d-flex gap-2">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <a href="/logout" class="btn btn-outline-danger btn-sm">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 py-4">
+    <h2 class="fw-bold mb-4">📊 Analytics & Charts</h2>
+
+    <!-- Historical Chart Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">📈 Historical Exchange Rates</h5>
+                    <div class="d-flex gap-2 flex-wrap ms-auto">
+                        <select id="chartFrom" class="form-select form-select-sm"
+                                style="width:auto">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="JPY">JPY</option>
+                            <option value="INR">INR</option>
+                        </select>
+                        <select id="chartTo" class="form-select form-select-sm"
+                                style="width:auto">
+                            <option value="EUR" selected>EUR</option>
+                            <option value="USD">USD</option>
+                            <option value="GBP">GBP</option>
+                            <option value="JPY">JPY</option>
+                            <option value="INR">INR</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline-primary"
+                                onclick="loadChart(7)">7D</button>
+                        <button class="btn btn-sm btn-primary"
+                                onclick="loadChart(30)">30D</button>
+                        <button class="btn btn-sm btn-outline-primary"
+                                onclick="loadChart(90)">90D</button>
+                    </div>
+                </div>
+
+                <!-- Chart Stats -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-label">Minimum</div>
+                            <div class="stat-value" id="statMin">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card"
+                             style="border-left-color:#059669">
+                            <div class="stat-label">Maximum</div>
+                            <div class="stat-value text-success"
+                                 id="statMax">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card"
+                             style="border-left-color:#7c3aed">
+                            <div class="stat-label">Average</div>
+                            <div class="stat-value"
+                                 style="color:#7c3aed"
+                                 id="statAvg">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card"
+                             style="border-left-color:#d97706">
+                            <div class="stat-label">Period Change</div>
+                            <div class="stat-value" id="statChange">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chartLoader" class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p class="mt-2 text-muted">Loading chart...</p>
+                </div>
+                <div style="height: 400px; position: relative;">
+                    <canvas id="historicalChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi Currency Comparison -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <div class="d-flex align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">
+                        🌍 Multi-Currency Comparison (30 Days)
+                    </h5>
+                    <div class="ms-auto d-flex gap-2">
+                        <select id="multiBase"
+                                class="form-select form-select-sm"
+                                style="width:auto">
+                            <option value="USD">Base: USD</option>
+                            <option value="EUR">Base: EUR</option>
+                            <option value="GBP">Base: GBP</option>
+                        </select>
+                        <button class="btn btn-sm btn-primary"
+                                onclick="loadMultiCurrencyChart()">
+                            Load Chart
+                        </button>
+                    </div>
+                </div>
+                <div style="height: 350px; position: relative;">
+                    <canvas id="multiCurrencyChart"></canvas>
+                </div>
+                <small class="text-muted mt-2 d-block">
+                    * Values shown as % change from start of period
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Prediction Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="fw-bold mb-4">
+                    🔮 AI Currency Prediction
+                </h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label">From Currency</label>
+                        <select id="predFrom" class="form-select">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="JPY">JPY</option>
+                            <option value="INR">INR</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Currency</label>
+                        <select id="predTo" class="form-select">
+                            <option value="EUR" selected>EUR</option>
+                            <option value="USD">USD</option>
+                            <option value="GBP">GBP</option>
+                            <option value="JPY">JPY</option>
+                            <option value="INR">INR</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Algorithm</label>
+                        <select id="predAlgorithm" class="form-select">
+                            <option value="sma">
+                                Simple Moving Average
+                            </option>
+                            <option value="regression">
+                                Linear Regression
+                            </option>
+                            <option value="wma">
+                                Weighted Moving Average
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Predict Days</label>
+                        <select id="predPeriods" class="form-select">
+                            <option value="7">7 Days</option>
+                            <option value="14">14 Days</option>
+                            <option value="30">30 Days</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="predictBtn" class="btn btn-primary mb-4"
+                        onclick="runAIPrediction()">
+                    🔮 Run AI Prediction
+                </button>
+
+                <div id="predictionLoader"
+                     class="loading-spinner" style="display:none">
+                    <div class="spinner"></div>
+                    <p class="mt-2">Running AI analysis...</p>
+                </div>
+
+                <div id="predictionResults"
+                     style="display:none" class="mb-4"></div>
+
+                <div style="height: 350px; position: relative;">
+                    <canvas id="predictionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/charts.js}"></script>
+<script th:src="@{/js/prediction.js}"></script>
+<script>
+    function loadChart(days) {
+        const from = document.getElementById('chartFrom').value;
+        const to = document.getElementById('chartTo').value;
+        loadHistoricalChart(from, to, days);
+    }
+    loadChart(30);
+</script>
+</body>
+</html>

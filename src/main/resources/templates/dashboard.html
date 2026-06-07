@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ForexPro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">💱 Forex<span>Pro</span></a>
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/history">History</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/analytics">Analytics</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/news">News</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center gap-3">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <span class="text-muted" sec:authentication="name">
+                    User
+                </span>
+                <a href="/logout" class="btn btn-outline-danger btn-sm">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+
+    <!-- Welcome Header -->
+    <div class="dashboard-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="welcome-text mb-1">
+                    Welcome back,
+                    <span th:text="${user?.fullName ?: user?.username}">
+                        User
+                    </span>! 👋
+                </h3>
+                <p class="mb-0 opacity-75">
+                    Here's your currency dashboard
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <span class="badge-rate">
+                    🟢 Live Rates Active
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Total Conversions</div>
+                <div class="stat-value"
+                     th:text="${#lists.size(recentHistory)}">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #7c3aed">
+                <div class="stat-label">Favorite Pairs</div>
+                <div class="stat-value"
+                     style="color: #7c3aed"
+                     th:text="${#lists.size(favorites)}">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #059669">
+                <div class="stat-label">USD/EUR Rate</div>
+                <div class="stat-value" style="color: #059669"
+                     id="dashUsdEur">Loading...</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #d97706">
+                <div class="stat-label">USD/INR Rate</div>
+                <div class="stat-value" style="color: #d97706"
+                     id="dashUsdInr">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Quick Converter -->
+        <div class="col-lg-6">
+            <div class="converter-card h-100">
+                <h5 class="fw-bold mb-3">
+                    ⚡ Quick Converter
+                </h5>
+                <div class="mb-3">
+                    <input type="number" id="amount"
+                           class="form-control amount-input"
+                           placeholder="Amount" value="1">
+                </div>
+                <div class="row align-items-center mb-3">
+                    <div class="col-5">
+                        <select id="fromCurrency" class="form-select">
+                            <option value="USD">🇺🇸 USD</option>
+                            <option value="EUR">🇪🇺 EUR</option>
+                            <option value="GBP">🇬🇧 GBP</option>
+                            <option value="JPY">🇯🇵 JPY</option>
+                            <option value="INR">🇮🇳 INR</option>
+                            <option value="AUD">🇦🇺 AUD</option>
+                            <option value="CAD">🇨🇦 CAD</option>
+                            <option value="CHF">🇨🇭 CHF</option>
+                            <option value="CNY">🇨🇳 CNY</option>
+                            <option value="AED">🇦🇪 AED</option>
+                        </select>
+                    </div>
+                    <div class="col-2 text-center">
+                        <button class="swap-btn"
+                                onclick="swapCurrencies()">⇄</button>
+                    </div>
+                    <div class="col-5">
+                        <select id="toCurrency" class="form-select">
+                            <option value="USD">🇺🇸 USD</option>
+                            <option value="EUR" selected>🇪🇺 EUR</option>
+                            <option value="GBP">🇬🇧 GBP</option>
+                            <option value="JPY">🇯🇵 JPY</option>
+                            <option value="INR">🇮🇳 INR</option>
+                            <option value="AUD">🇦🇺 AUD</option>
+                            <option value="CAD">🇨🇦 CAD</option>
+                            <option value="CHF">🇨🇭 CHF</option>
+                            <option value="CNY">🇨🇳 CNY</option>
+                            <option value="AED">🇦🇪 AED</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="loadingSpinner" class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+                <div id="resultBox" class="result-box mb-3">
+                    <div id="resultAmount" class="result-amount"></div>
+                    <div id="resultRate" class="result-rate"></div>
+                </div>
+                <button class="btn-convert" onclick="convertCurrency()">
+                    Convert Now
+                </button>
+            </div>
+        </div>
+
+        <!-- Favorite Pairs -->
+        <div class="col-lg-6">
+            <div class="sidebar h-100">
+                <div class="sidebar-title">⭐ Favorite Pairs</div>
+                <div th:if="${#lists.isEmpty(favorites)}">
+                    <p class="text-muted text-center py-3">
+                        No favorites yet.<br>
+                        <a href="/">Add some from the converter</a>
+                    </p>
+                </div>
+                <div th:each="pair : ${favorites}">
+                    <div class="rate-item">
+                        <div>
+                            <span class="rate-pair"
+                                  th:text="${pair.fromCurrency + ' → ' + pair.toCurrency}">
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="rate-value"
+                                  th:id="'rate-' + ${pair.fromCurrency} + '-' + ${pair.toCurrency}">
+                                Loading...
+                            </span>
+                            <button class="btn btn-sm btn-outline-primary"
+                                    th:onclick="'quickConvert(\'' + ${pair.fromCurrency} + '\',\'' + ${pair.toCurrency} + '\')'">
+                                Go
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Conversions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="table-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">
+                        🕐 Recent Conversions
+                    </h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-outline-success"
+                                onclick="exportHistory('csv')">
+                            📥 CSV
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary"
+                                onclick="exportHistory('excel')">
+                            📊 Excel
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                onclick="exportHistory('pdf')">
+                            📄 PDF
+                        </button>
+                        <a href="/history"
+                           class="btn btn-sm btn-outline-secondary">
+                            View All
+                        </a>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover"
+                           id="historyTable">
+                        <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Amount</th>
+                            <th>Converted</th>
+                            <th>Rate</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(recentHistory)}">
+                            <td colspan="6" class="text-center text-muted">
+                                No conversions yet
+                            </td>
+                        </tr>
+                        <tr th:each="h : ${recentHistory}">
+                            <td>
+                                <strong th:text="${h.fromCurrency}">
+                                </strong>
+                            </td>
+                            <td>
+                                <strong th:text="${h.toCurrency}">
+                                </strong>
+                            </td>
+                            <td th:text="${h.amount}"></td>
+                            <td class="text-success fw-bold"
+                                th:text="${h.convertedAmount}">
+                            </td>
+                            <td th:text="${h.exchangeRate}"></td>
+                            <td th:text="${#temporals.format(h.conversionDate, 'dd MMM yyyy HH:mm')}">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    async function loadDashboardRates() {
+        try {
+            const response = await fetch('/api/rates/USD');
+            const rates = await response.json();
+            if (rates.EUR) document.getElementById('dashUsdEur').textContent =
+                rates.EUR.toFixed(4);
+            if (rates.INR) document.getElementById('dashUsdInr').textContent =
+                rates.INR.toFixed(2);
+        } catch(e) {
+            console.error('Error loading dashboard rates:', e);
+        }
+    }
+    loadDashboardRates();
+</script>
+<script th:src="@{/js/export.js}"></script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForexPro - Intelligent Currency Conversion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            💱 Forex<span>Pro</span>
+        </a>
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+                <a class="nav-link active" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#rates">Live Rates</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#converter">Converter</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/analytics">Analytics</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/news">News</a>
+            </li>
+        </ul>
+            <div class="d-flex align-items-center gap-3">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <button class="voice-btn" id="voiceBtn"
+                        onclick="toggleVoice()" title="Voice Command">
+                    🎤
+                </button>
+                <div sec:authorize="isAuthenticated()">
+                    <a href="/dashboard" class="btn btn-primary btn-sm">
+                        Dashboard
+                    </a>
+                </div>
+                <div sec:authorize="!isAuthenticated()">
+                    <a href="/login" class="btn btn-outline-primary btn-sm me-2">
+                        Login
+                    </a>
+                    <a href="/register" class="btn btn-primary btn-sm">
+                        Register
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Rate Ticker -->
+<div class="rate-ticker">
+    <div style="display:inline-block; animation: ticker 40s linear infinite; white-space:nowrap; padding-left:100%;">
+        <span id="tickerContent">
+            🇪🇺 USD/EUR: Loading... &nbsp;|&nbsp;
+            🇬🇧 USD/GBP: Loading... &nbsp;|&nbsp;
+            🇯🇵 USD/JPY: Loading... &nbsp;|&nbsp;
+            🇮🇳 USD/INR: Loading...
+        </span>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero-section" id="converter">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h1 class="hero-title">
+                    Smart Currency<br>
+                    <span style="color:#93c5fd">Conversion</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Real-time exchange rates powered by live data.
+                    Convert 150+ currencies instantly.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success">✓</span>
+                        <span>Real-time rates</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success">✓</span>
+                        <span>150+ currencies</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success">✓</span>
+                        <span>Free to use</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Converter Card -->
+            <div class="col-lg-6">
+                <div class="converter-card">
+                    <h5 class="mb-3 fw-bold">
+                        <i class="bi bi-currency-exchange me-2"></i>
+                        Currency Converter
+                    </h5>
+
+                    <!-- Amount Input -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Amount</label>
+                        <input type="number" id="amount"
+                               class="form-control amount-input"
+                               placeholder="Enter amount" value="1" min="0">
+                    </div>
+
+                    <!-- Currency Selectors -->
+                    <div class="row align-items-center mb-3">
+                        <div class="col-5">
+                            <label class="form-label fw-semibold">From</label>
+                            <select id="fromCurrency" class="form-select">
+                                <option value="USD">🇺🇸 USD - US Dollar</option>
+                                <option value="EUR">🇪🇺 EUR - Euro</option>
+                                <option value="GBP">🇬🇧 GBP - British Pound</option>
+                                <option value="JPY">🇯🇵 JPY - Japanese Yen</option>
+                                <option value="INR">🇮🇳 INR - Indian Rupee</option>
+                                <option value="AUD">🇦🇺 AUD - Australian Dollar</option>
+                                <option value="CAD">🇨🇦 CAD - Canadian Dollar</option>
+                                <option value="CHF">🇨🇭 CHF - Swiss Franc</option>
+                                <option value="CNY">🇨🇳 CNY - Chinese Yuan</option>
+                                <option value="SGD">🇸🇬 SGD - Singapore Dollar</option>
+                                <option value="AED">🇦🇪 AED - UAE Dirham</option>
+                                <option value="SAR">🇸🇦 SAR - Saudi Riyal</option>
+                                <option value="MYR">🇲🇾 MYR - Malaysian Ringgit</option>
+                                <option value="HKD">🇭🇰 HKD - Hong Kong Dollar</option>
+                                <option value="KRW">🇰🇷 KRW - South Korean Won</option>
+                                <option value="BRL">🇧🇷 BRL - Brazilian Real</option>
+                                <option value="ZAR">🇿🇦 ZAR - South African Rand</option>
+                                <option value="MXN">🇲🇽 MXN - Mexican Peso</option>
+                                <option value="NZD">🇳🇿 NZD - New Zealand Dollar</option>
+                                <option value="THB">🇹🇭 THB - Thai Baht</option>
+                            </select>
+                        </div>
+                        <div class="col-2 text-center mt-3">
+                            <button class="swap-btn" onclick="swapCurrencies()"
+                                    title="Swap currencies">⇄</button>
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label fw-semibold">To</label>
+                            <select id="toCurrency" class="form-select">
+                                <option value="USD">🇺🇸 USD - US Dollar</option>
+                                <option value="EUR" selected>🇪🇺 EUR - Euro</option>
+                                <option value="GBP">🇬🇧 GBP - British Pound</option>
+                                <option value="JPY">🇯🇵 JPY - Japanese Yen</option>
+                                <option value="INR">🇮🇳 INR - Indian Rupee</option>
+                                <option value="AUD">🇦🇺 AUD - Australian Dollar</option>
+                                <option value="CAD">🇨🇦 CAD - Canadian Dollar</option>
+                                <option value="CHF">🇨🇭 CHF - Swiss Franc</option>
+                                <option value="CNY">🇨🇳 CNY - Chinese Yuan</option>
+                                <option value="SGD">🇸🇬 SGD - Singapore Dollar</option>
+                                <option value="AED">🇦🇪 AED - UAE Dirham</option>
+                                <option value="SAR">🇸🇦 SAR - Saudi Riyal</option>
+                                <option value="MYR">🇲🇾 MYR - Malaysian Ringgit</option>
+                                <option value="HKD">🇭🇰 HKD - Hong Kong Dollar</option>
+                                <option value="KRW">🇰🇷 KRW - South Korean Won</option>
+                                <option value="BRL">🇧🇷 BRL - Brazilian Real</option>
+                                <option value="ZAR">🇿🇦 ZAR - South African Rand</option>
+                                <option value="MXN">🇲🇽 MXN - Mexican Peso</option>
+                                <option value="NZD">🇳🇿 NZD - New Zealand Dollar</option>
+                                <option value="THB">🇹🇭 THB - Thai Baht</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Loading -->
+                    <div id="loadingSpinner" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p class="mt-2 text-muted">Converting...</p>
+                    </div>
+
+                    <!-- Result Box -->
+                    <div id="resultBox" class="result-box mb-3">
+                        <div id="resultAmount" class="result-amount"></div>
+                        <div id="resultRate" class="result-rate"></div>
+                    </div>
+
+                    <!-- Convert Button -->
+                    <button class="btn-convert" id="convertBtn"
+                            onclick="convertCurrency()">
+                        <i class="bi bi-arrow-left-right me-2"></i>
+                        Convert Now
+                    </button>
+
+                    <!-- Auto Refresh -->
+                    <div class="d-flex align-items-center justify-content-between mt-3">
+                        <small class="text-muted">
+                            <span id="liveRate">Select currencies to see rate</span>
+                        </small>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox"
+                                   id="autoRefresh" onchange="startAutoRefresh()">
+                            <label class="form-check-label" for="autoRefresh">
+                                <small>Auto Refresh</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Live Rates Table -->
+<section class="py-5" id="rates">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold">📊 Live Exchange Rates</h2>
+            <button class="btn btn-outline-primary btn-sm"
+                    onclick="loadLiveRates()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
+        </div>
+
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover" id="ratesTable">
+                    <thead>
+                    <tr>
+                        <th>Currency</th>
+                        <th>Name</th>
+                        <th>Rate (vs USD)</th>
+                        <th>Change</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="ratesTableBody">
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            Loading rates...
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="fw-bold text-center mb-5">Why Choose ForexPro?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon bg-primary bg-opacity-10 mx-auto">
+                        ⚡
+                    </div>
+                    <h5 class="fw-bold">Real-time Rates</h5>
+                    <p class="text-muted">Live exchange rates updated every
+                        minute from reliable sources</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon bg-success bg-opacity-10 mx-auto">
+                        📈
+                    </div>
+                    <h5 class="fw-bold">Historical Charts</h5>
+                    <p class="text-muted">Analyze currency trends with
+                        interactive charts and graphs</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon bg-warning bg-opacity-10 mx-auto">
+                        🎤
+                    </div>
+                    <h5 class="fw-bold">Voice Commands</h5>
+                    <p class="text-muted">Convert currencies using your voice.
+                        Say "convert 100 USD to EUR"</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon bg-danger bg-opacity-10 mx-auto">
+                        ⭐
+                    </div>
+                    <h5 class="fw-bold">Favorites</h5>
+                    <p class="text-muted">Save your favorite currency pairs
+                        for quick access</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon bg-info bg-opacity-10 mx-auto">
+                        📥
+                    </div>
+                    <h5 class="fw-bold">Export Data</h5>
+                    <p class="text-muted">Export conversion history to
+                        CSV, Excel or PDF</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon bg-secondary bg-opacity-10 mx-auto">
+                        🔒
+                    </div>
+                    <h5 class="fw-bold">Secure Login</h5>
+                    <p class="text-muted">Personal dashboard with secure
+                        login and conversion history</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark text-white py-4">
+    <div class="container text-center">
+        <p class="mb-1">
+            💱 <strong>ForexPro</strong> — Intelligent Currency Conversion
+        </p>
+        <p class="text-muted small mb-0">
+            Powered by ExchangeRate-API & Frankfurter API
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/export.js}"></script>
+<script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registered'))
+            .catch(err => console.log('SW error:', err));
+    }
+</script>
+</body>
+</html>
